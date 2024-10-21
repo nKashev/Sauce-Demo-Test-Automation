@@ -1,4 +1,4 @@
-# Sauce-Semo-Test-Automation
+# Sauce-Demo-Test-Automation
 
 Automation test task using the following tools:
 1. Maven
