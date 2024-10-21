@@ -7,7 +7,7 @@ Automation test task using the following tools:
 4. Java 17
 5. Cucumber
 
-Test works on Chrome browser: SauceDemo[https://www.saucedemo.com/]
+Test works on Chrome browser: [SauceDemo](https://www.saucedemo.com/)
 
 #Test scenario:
 1. Login with standard_user.
@@ -26,3 +26,7 @@ b. Items
 c. Buttons
 12. Click continue and verify success message for successful purchase.
 13. Logout
+
+#I created workflows to run daily tests on the latest Windows, Mac and Ubuntu operating systems.
+
+[![Open Actions](https://img.shields.io/badge/Open-Actions-brightgreen?style=for-the-badge)](https://github.com/nKashev/Sauce-Semo-Test-Automation/actions)
