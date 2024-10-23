@@ -1,6 +1,7 @@
 name: Run Tests on Multiple OS
 
 on:
+    workflow_dispatch:
     # push:
     #   branches:
     #     - main
@@ -8,7 +9,7 @@ on:
     #   branches:
     #     - main
     schedule:
-      - cron: '25 16 * * *'
+      - cron: '40 15 * * *'
 
 jobs:
   test:
