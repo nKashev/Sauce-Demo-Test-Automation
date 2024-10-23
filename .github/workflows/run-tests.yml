@@ -1,9 +1,9 @@
 name: Run Tests on Multiple OS
 
 on:
-    push:
-      branches:
-        - main
+    # push:
+    #   branches:
+    #     - main
     # pull_request:
     #   branches:
     #     - main
