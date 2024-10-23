@@ -1,7 +1,0 @@
-com\example\pages\BasePage.class
-com\example\pages\LoginPage.class
-com\example\models\Item.class
-com\example\pages\CheckoutPage.class
-com\example\pages\ProductsPage.class
-com\example\pages\CartPage.class
-com\example\pages\CommonElements.class
