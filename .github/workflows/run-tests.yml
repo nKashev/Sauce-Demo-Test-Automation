@@ -9,7 +9,8 @@ on:
     #   branches:
     #     - main
     schedule:
-      - cron: '40 15 * * *'
+  - cron: '59 23 * * 7'
+    timezone: 'Europe/Sofia'
 
 jobs:
   test:
