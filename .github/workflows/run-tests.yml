@@ -1,23 +1,22 @@
 name: Run Tests on Multiple OS
 
 on:
-    workflow_dispatch:
-    # push:
-    #   branches:
-    #     - main
-    # pull_request:
-    #   branches:
-    #     - main
-    schedule:
-  - cron: '59 23 * * 7'
-    timezone: 'Europe/Sofia'
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+  # pull_request:
+  #   branches:
+  #     - main
+  schedule:
+    - cron: '59 21 * * 7'  # Runs every Sunday at 23:59 Bulgaria time (UTC+2 in winter, UTC+3 in summer)
 
 jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        #os: [ubuntu-latest, macos-latest, windows-latest]
+        # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
         java: [17]
 
@@ -43,7 +42,7 @@ jobs:
         with:
           name: cucumber-reports-${{ matrix.os }}
           path: target/cucumber-reports/
-          
+
       # - name: Archive test reports (Surefire)
       #   if: always()
       #   uses: actions/upload-artifact@v4
