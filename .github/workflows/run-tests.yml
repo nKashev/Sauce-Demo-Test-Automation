@@ -9,7 +9,7 @@ on:
   #   branches:
   #     - main
   schedule:
-    - cron: '59 21 * * 7'  # Runs every Sunday at 23:59 Bulgaria time (UTC+2 in winter, UTC+3 in summer)
+    - cron: '59 21 * * 7'
 
 jobs:
   test:
