@@ -9,7 +9,7 @@ on:
   #   branches:
   #     - main
   schedule:
-    - cron: '59 21 * * 7'
+    - cron: '59 21 * * 7'  # Every Sunday at 21:59 UTC
 
 jobs:
   test:
