@@ -105,49 +105,36 @@ public class ProductsPage extends BasePage {
         }
     }
 
-    // Method to verify that a specific product is added to the cart by its name
-    // public boolean areProductsInCart(List<String> selectedItemNames) {
-    //     boolean allProductsInCart = true;
-    
-    //     for (String itemName : selectedItemNames) {
-    //         String itemDataTestId = itemName.toLowerCase().replace(" ", "-");
-    
-    //         try {
-    //             // System.out.println("Checking for product: " + itemName);
-    //             String removeButtonSelector = "//button[@data-test='remove-" + itemDataTestId + "']";
-    //             // System.out.println("Using XPath: " + removeButtonSelector);
-    
-    //             WebElement removeButton = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(removeButtonSelector)));
-    
-    //             scrollToElement(removeButton);
-    
-    //             if (!removeButton.isDisplayed()) {
-    //                 allProductsInCart = false;
-    //             }
-    //         } catch (TimeoutException e) {
-    //             // System.out.println("Product not found: " + itemName);
-    //             allProductsInCart = false;
-    //         }
-    //     }
-    
-    //     return allProductsInCart;
-    // }
-
+    // Improved method to verify that specific products are added to the cart by their names
+    // This method does not perform long blocking waits itself, so it is safe to be used with an outer WebDriverWait polling.
     public boolean areProductsInCart(List<String> productNames) {
-    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-    
-    for (String productName : productNames) {
-        try {
-            // Wait for the cart badge to update or for the product to appear
-            wait.until(ExpectedConditions.presenceOfElementLocated(
-                By.xpath("//span[@class='shopping_cart_badge']")
-            ));
-        } catch (TimeoutException e) {
+        // First, quick-check cart badge count (if available) to short-circuit
+        List<WebElement> badgeElements = driver.findElements(By.cssSelector(".shopping_cart_badge"));
+        int badgeCount = 0;
+        if (!badgeElements.isEmpty()) {
+            try {
+                badgeCount = Integer.parseInt(badgeElements.get(0).getText().trim());
+            } catch (NumberFormatException ignored) {
+                badgeCount = 0;
+            }
+        }
+
+        if (badgeCount < productNames.size()) {
+            // Not enough items in badge -> definitely not all added yet
             return false;
         }
+
+        // Verify that each product has a corresponding "Remove" button present in the DOM
+        for (String productName : productNames) {
+            String id = productName.toLowerCase().replace(" ", "-");
+            List<WebElement> removeButtons = driver.findElements(By.cssSelector("button[data-test='remove-" + id + "']"));
+            if (removeButtons.isEmpty()) {
+                return false;
+            }
+        }
+
+        return true;
     }
-    return true;
-}
 
     // Method to verify that a specific product is not in the cart by its name
     public boolean areProductsNotInCart(List<String> productNames) {
