@@ -81,19 +81,33 @@ public class SauceDemoStepDefinitions {
     //     assertTrue(areInCart, "One or more products are not displayed in the cart.");
     // }
 
+    // @Then("the products should be successfully added to the cart without going to the cart")
+    // public void the_products_should_be_successfully_added_to_the_cart_without_going_to_the_cart() {
+    //     List<String> selectedItemsNames = Arrays.asList("Sauce Labs Backpack", "Sauce Labs Bike Light");
+    
+    //     // Add a small delay to ensure the page has updated
+    //     try {
+    //         Thread.sleep(1000);
+    //     } catch (InterruptedException e) {
+    //         Thread.currentThread().interrupt();
+    //     }
+    
+    //     boolean areInCart = productsPage.areProductsInCart(selectedItemsNames);
+    
+    //     assertTrue(areInCart, "One or more products are not displayed in the cart.");
+    // }
+
     @Then("the products should be successfully added to the cart without going to the cart")
     public void the_products_should_be_successfully_added_to_the_cart_without_going_to_the_cart() {
         List<String> selectedItemsNames = Arrays.asList("Sauce Labs Backpack", "Sauce Labs Bike Light");
+
+        // Use explicit wait instead of hard sleep
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
     
-        // Add a small delay to ensure the page has updated
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        // Wait for cart badge to be updated
+        wait.until(driver -> productsPage.areProductsInCart(selectedItemsNames));
     
         boolean areInCart = productsPage.areProductsInCart(selectedItemsNames);
-    
         assertTrue(areInCart, "One or more products are not displayed in the cart.");
     }
     
