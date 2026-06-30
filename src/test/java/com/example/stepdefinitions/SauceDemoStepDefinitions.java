@@ -103,10 +103,10 @@ public class SauceDemoStepDefinitions {
 
         // Use explicit wait instead of hard sleep
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-    
-        // Wait for cart badge to be updated
-        wait.until(driver -> productsPage.areProductsInCart(selectedItemsNames));
-    
+
+        // Wait for cart badge to be updated - return boolean explicitly
+        wait.until(d -> productsPage.areProductsInCart(selectedItemsNames));
+
         boolean areInCart = productsPage.areProductsInCart(selectedItemsNames);
         assertTrue(areInCart, "One or more products are not displayed in the cart.");
     }
