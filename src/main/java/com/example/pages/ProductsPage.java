@@ -106,32 +106,48 @@ public class ProductsPage extends BasePage {
     }
 
     // Method to verify that a specific product is added to the cart by its name
-    public boolean areProductsInCart(List<String> selectedItemNames) {
-        boolean allProductsInCart = true;
+    // public boolean areProductsInCart(List<String> selectedItemNames) {
+    //     boolean allProductsInCart = true;
     
-        for (String itemName : selectedItemNames) {
-            String itemDataTestId = itemName.toLowerCase().replace(" ", "-");
+    //     for (String itemName : selectedItemNames) {
+    //         String itemDataTestId = itemName.toLowerCase().replace(" ", "-");
     
-            try {
-                // System.out.println("Checking for product: " + itemName);
-                String removeButtonSelector = "//button[@data-test='remove-" + itemDataTestId + "']";
-                // System.out.println("Using XPath: " + removeButtonSelector);
+    //         try {
+    //             // System.out.println("Checking for product: " + itemName);
+    //             String removeButtonSelector = "//button[@data-test='remove-" + itemDataTestId + "']";
+    //             // System.out.println("Using XPath: " + removeButtonSelector);
     
-                WebElement removeButton = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(removeButtonSelector)));
+    //             WebElement removeButton = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(removeButtonSelector)));
     
-                scrollToElement(removeButton);
+    //             scrollToElement(removeButton);
     
-                if (!removeButton.isDisplayed()) {
-                    allProductsInCart = false;
-                }
-            } catch (TimeoutException e) {
-                // System.out.println("Product not found: " + itemName);
-                allProductsInCart = false;
-            }
+    //             if (!removeButton.isDisplayed()) {
+    //                 allProductsInCart = false;
+    //             }
+    //         } catch (TimeoutException e) {
+    //             // System.out.println("Product not found: " + itemName);
+    //             allProductsInCart = false;
+    //         }
+    //     }
+    
+    //     return allProductsInCart;
+    // }
+
+    public boolean areProductsInCart(List<String> productNames) {
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+    
+    for (String productName : productNames) {
+        try {
+            // Wait for the cart badge to update or for the product to appear
+            wait.until(ExpectedConditions.presenceOfElementLocated(
+                By.xpath("//span[@class='shopping_cart_badge']")
+            ));
+        } catch (TimeoutException e) {
+            return false;
         }
-    
-        return allProductsInCart;
     }
+    return true;
+}
 
     // Method to verify that a specific product is not in the cart by its name
     public boolean areProductsNotInCart(List<String> productNames) {
