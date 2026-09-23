@@ -44,8 +44,16 @@ public class SauceDemoStepDefinitions {
     @Before
     public void setUp() {
         ChromeOptions options = new ChromeOptions();
-        // options.addArguments("--headless"); // old headless mode renders unreliably on newer Chrome builds
-        options.addArguments("--headless=new");
+        // Headless by default in CI (GitHub Actions sets CI=true); visible browser locally.
+        // Override either way with -Dheadless=true|false.
+        boolean headless = Boolean.parseBoolean(
+                System.getProperty("headless", String.valueOf(System.getenv("CI") != null)));
+        if (headless) {
+            // "--headless" (old mode) renders unreliably on newer Chrome builds
+            options.addArguments("--headless=new");
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+        }
         // Fixed viewport instead of maximize() - maximize() is unreliable in headless mode
         // across different CI runner screen geometries, which was a source of flaky layouts.
         options.addArguments("--window-size=1920,1080");
