@@ -7,11 +7,9 @@ import org.openqa.selenium.WebElement;
 import java.util.List;
 
 public class CheckoutPage extends BasePage {
-    WebDriver driver;
 
     public CheckoutPage(WebDriver driver) {
         super(driver);
-        this.driver = driver;
     }
 
     // Step One: Checkout Form

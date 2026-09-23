@@ -8,7 +8,6 @@ import org.openqa.selenium.support.FindBy;
 
 public class LoginPage extends BasePage {
 
-    private WebDriver driver;
 
     // Locate elements on the login page
     @FindBy(id = "user-name")

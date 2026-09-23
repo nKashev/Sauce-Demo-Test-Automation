@@ -1,5 +1,6 @@
 package com.example.stepdefinitions;
 
+import com.example.config.TestConfig;
 import com.example.models.Item;
 import com.example.pages.*;
 import io.cucumber.java.After;
@@ -17,13 +18,11 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,29 +92,26 @@ public class SauceDemoStepDefinitions {
     
     @Given("I am on the Sauce Demo login page")
     public void i_am_on_the_sauce_demo_login_page() {
-        driver.get("https://www.saucedemo.com/");
+        driver.get(TestConfig.baseUrl());
         loginPage = new LoginPage(driver);
-        PageFactory.initElements(driver, loginPage);
     }
 
     @When("I log in with standard_user credentials")
     public void i_log_in_with_standard_user_credentials() {
-        loginPage.login("standard_user", "secret_sauce");
+        loginPage.login(TestConfig.username(), TestConfig.password());
         handlePossibleAlert();
         productsPage = new ProductsPage(driver);
     }
 
     @Then("I should be on the products page")
     public void i_should_be_on_the_products_page() {
-        PageFactory.initElements(driver, productsPage);
         assertTrue(productsPage.isOnProductsPage());
     }
 
     @When("I add two specific products to the cart")
     public void i_add_two_specific_products_to_the_cart() {
         productsPage = new ProductsPage(driver);
-        PageFactory.initElements(driver, productsPage);
-        List<String> productsToAdd = Arrays.asList("Sauce Labs Backpack", "Sauce Labs Bike Light");
+        List<String> productsToAdd = TestConfig.getList("products.first");
         productsPage.addProductToCartByName(productsToAdd);
 
         selectedItems.addAll(productsPage.getSelectedItems());
@@ -131,7 +127,7 @@ public class SauceDemoStepDefinitions {
 
     @Then("the products should be successfully added to the cart without going to the cart")
     public void the_products_should_be_successfully_added_to_the_cart_without_going_to_the_cart() {
-        List<String> selectedItemsNames = Arrays.asList("Sauce Labs Backpack", "Sauce Labs Bike Light");
+        List<String> selectedItemsNames = TestConfig.getList("products.first");
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         wait.until(d -> productsPage.areProductsInCart(selectedItemsNames));
@@ -157,8 +153,7 @@ public class SauceDemoStepDefinitions {
     @When("I remove the products from the cart")
     public void i_remove_the_products_from_the_cart() {
         productsPage = new ProductsPage(driver);
-        PageFactory.initElements(driver, productsPage);
-        List<String> productsToRemove = Arrays.asList("Sauce Labs Backpack", "Sauce Labs Bike Light");
+        List<String> productsToRemove = TestConfig.getList("products.first");
         productsPage.removeProductsFromCartByNames(productsToRemove);
         
         selectedItems.removeIf(item -> productsToRemove.contains(item.getName()));
@@ -166,7 +161,7 @@ public class SauceDemoStepDefinitions {
 
     @Then("the products should be successfully removed from the cart without going to the cart")
     public void the_products_should_be_successfully_removed_from_the_cart_without_going_to_the_cart() {
-        List<String> selectedItemsNames = Arrays.asList("Sauce Labs Backpack", "Sauce Labs Bike Light");
+        List<String> selectedItemsNames = TestConfig.getList("products.first");
         boolean areNotInCart = productsPage.areProductsNotInCart(selectedItemsNames);
 
         assertTrue(areNotInCart, "One or more products are displayed in the cart.");
@@ -175,8 +170,7 @@ public class SauceDemoStepDefinitions {
     @When("I add two different products to the cart")
     public void i_add_two_different_products_to_the_cart() {
         productsPage = new ProductsPage(driver);
-        PageFactory.initElements(driver, productsPage);
-        List<String> productsToAdd = Arrays.asList("Test.allTheThings() T-Shirt (Red)", "Sauce Labs Bolt T-Shirt");
+        List<String> productsToAdd = TestConfig.getList("products.second");
         productsPage.addProductToCartByName(productsToAdd);
 
         selectedItems.addAll(productsPage.getSelectedItems());
@@ -186,7 +180,6 @@ public class SauceDemoStepDefinitions {
     public void i_go_to_the_cart() {
         commonElements = new CommonElements(driver);
         cartPage = new CartPage(driver);
-        PageFactory.initElements(driver, cartPage);
 
         commonElements.goToCart();
         handlePossibleAlert();
@@ -225,7 +218,7 @@ public class SauceDemoStepDefinitions {
     @When("I fill in the checkout form with valid information")
     public void i_fill_in_the_checkout_form_with_valid_information() {
         checkoutPage = new CheckoutPage(driver);
-        checkoutPage.submitForm("Nikolay", "Kashev", "4004");
+        checkoutPage.submitForm(TestConfig.get("checkout.firstName"), TestConfig.get("checkout.lastName"), TestConfig.get("checkout.zip"));
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         wait.until(ExpectedConditions.urlContains("checkout-step-two"));
@@ -266,8 +259,8 @@ public class SauceDemoStepDefinitions {
 
     @Then("I should see a purchase success message")
     public void i_should_see_a_purchase_success_message() {
-        assertTrue(checkoutPage.hasSuccessMessage("Thank you for your order!", 
-        "Your order has been dispatched, and will arrive just as fast as the pony can get there!"));
+        assertTrue(checkoutPage.hasSuccessMessage(
+                TestConfig.get("message.success.header"), TestConfig.get("message.success.text")));
     }
 
     @When("I log out")
@@ -278,7 +271,7 @@ public class SauceDemoStepDefinitions {
     @Then("I should be back on the login page")
     public void i_should_be_back_on_the_login_page() {
         // System.out.println(driver.getCurrentUrl());
-        assertEquals(driver.getCurrentUrl(), "https://www.saucedemo.com/", "The URL does not match the expected login page URL.");
+        assertEquals(driver.getCurrentUrl(), TestConfig.baseUrl(), "The URL does not match the expected login page URL.");
         assertTrue(commonElements.isLoginButtonDisplayed());
     }
 
