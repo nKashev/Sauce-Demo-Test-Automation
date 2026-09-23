@@ -1,6 +1,7 @@
 package com.example.pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -80,7 +81,7 @@ public class CartPage extends BasePage {
 
                 return null;
             });
-        } catch (org.openqa.selenium.TimeoutException e) {
+        } catch (TimeoutException e) {
             List<WebElement> fallbackButtons = driver.findElements(checkoutButtonFallback);
             if (!fallbackButtons.isEmpty()) {
                 checkoutBtn = fallbackButtons.get(0);
@@ -93,12 +94,12 @@ public class CartPage extends BasePage {
             scrollToElement(checkoutBtn);
             checkoutBtn.click();
             try {
-                wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("checkout-step-one"));
-            } catch (org.openqa.selenium.TimeoutException e) {
+                wait.until(ExpectedConditions.urlContains("checkout-step-one"));
+            } catch (TimeoutException e) {
                 // Click occasionally doesn't register (observed against the live site under headless Chrome).
                 // Re-locate and retry once before giving up.
                 checkoutBtn.click();
-                wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("checkout-step-one"));
+                wait.until(ExpectedConditions.urlContains("checkout-step-one"));
             }
         }
     }
@@ -118,7 +119,7 @@ public class CartPage extends BasePage {
                         }
                     }
                     return false;
-                } catch (org.openqa.selenium.StaleElementReferenceException e) {
+                } catch (StaleElementReferenceException e) {
                     // DOM re-rendered mid-read; treat as not-ready-yet and let the wait poll again.
                     return false;
                 }

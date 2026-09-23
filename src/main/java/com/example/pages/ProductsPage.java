@@ -4,6 +4,7 @@ import com.example.models.Item;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -134,7 +135,7 @@ public class ProductsPage extends BasePage {
                     }
 
                     return true;
-                } catch (org.openqa.selenium.StaleElementReferenceException e) {
+                } catch (StaleElementReferenceException e) {
                     // DOM re-rendered mid-read; treat as not-ready-yet and let the wait poll again.
                     return false;
                 }
@@ -157,7 +158,7 @@ public class ProductsPage extends BasePage {
                         }
                     }
                     return true;
-                } catch (org.openqa.selenium.StaleElementReferenceException e) {
+                } catch (StaleElementReferenceException e) {
                     return false;
                 }
             });

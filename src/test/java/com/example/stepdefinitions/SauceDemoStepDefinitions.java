@@ -4,6 +4,7 @@ import com.example.models.Item;
 import com.example.pages.*;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.Scenario;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -11,16 +12,21 @@ import io.cucumber.java.en.When;
 // import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -51,6 +57,15 @@ public class SauceDemoStepDefinitions {
         // options.addArguments("--password-store=basic");
         // options.addArguments("--no-default-browser-check");
         options.addArguments("--no-first-run");
+
+        // Prevent Chrome's Password Manager / leak-detection popup ("Change your password" -
+        // secret_sauce is a widely known public demo password and Google's Password Checkup
+        // flags it) from covering the page during local, non-headless debugging runs.
+        Map<String, Object> prefs = new HashMap<>();
+        prefs.put("credentials_enable_service", false);
+        prefs.put("profile.password_manager_enabled", false);
+        prefs.put("profile.password_manager_leak_detection", false);
+        options.setExperimentalOption("prefs", prefs);
 
         // WebDriverManager.chromedriver().setup(); // replaced by Selenium Manager (built into selenium-java since 4.6)
         driver = new ChromeDriver(options);
@@ -205,7 +220,7 @@ public class SauceDemoStepDefinitions {
         checkoutPage.submitForm("Nikolay", "Kashev", "4004");
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
-        wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("checkout-step-two"));
+        wait.until(ExpectedConditions.urlContains("checkout-step-two"));
     }
 
     @Then("the information on the last preview screen is shown properly")
@@ -260,8 +275,12 @@ public class SauceDemoStepDefinitions {
     }
 
     @After
-    public void cleanUp() {
+    public void cleanUp(Scenario scenario) {
         if (driver != null) {
+            if (scenario.isFailed()) {
+                byte[] screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+                scenario.attach(screenshot, "image/png", scenario.getName());
+            }
             driver.quit();
         }
     }
