@@ -29,7 +29,7 @@ public class ProductsPage extends BasePage {
     public ProductsPage(WebDriver driver) {
         super(driver);
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         PageFactory.initElements(driver, this);
         selectedItems = new ArrayList<>();
     }
@@ -90,7 +90,7 @@ public class ProductsPage extends BasePage {
             try {
                 WebElement removeButton = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(buttonSelector)));
                 scrollToElement(removeButton);
-                wait.until(ExpectedConditions.elementToBeClickable(removeButton)).click();
+                wait.until(ExpectedConditions.elementToBeClickable(By.xpath(buttonSelector))).click();
     
                 // Remove from selectedItems
                 selectedItems.removeIf(item -> item.getName().equalsIgnoreCase(productName));
@@ -105,47 +105,64 @@ public class ProductsPage extends BasePage {
         }
     }
 
-    // Improved method to verify that specific products are added to the cart by their names
-    // This method does not perform long blocking waits itself, so it is safe to be used with an outer WebDriverWait polling.
+    // Improved method to verify that specific products are added to the cart by their names.
+    // It waits until the cart badge and the corresponding remove buttons reflect the added products.
     public boolean areProductsInCart(List<String> productNames) {
-        // First, quick-check cart badge count (if available) to short-circuit
-        List<WebElement> badgeElements = driver.findElements(By.cssSelector(".shopping_cart_badge"));
-        int badgeCount = 0;
-        if (!badgeElements.isEmpty()) {
-            try {
-                badgeCount = Integer.parseInt(badgeElements.get(0).getText().trim());
-            } catch (NumberFormatException ignored) {
-                badgeCount = 0;
-            }
-        }
+        try {
+            return wait.until(driver -> {
+                try {
+                    List<WebElement> badgeElements = driver.findElements(By.cssSelector(".shopping_cart_badge"));
+                    int badgeCount = 0;
+                    if (!badgeElements.isEmpty()) {
+                        try {
+                            badgeCount = Integer.parseInt(badgeElements.get(0).getText().trim());
+                        } catch (NumberFormatException ignored) {
+                            badgeCount = 0;
+                        }
+                    }
 
-        if (badgeCount < productNames.size()) {
-            // Not enough items in badge -> definitely not all added yet
+                    if (badgeCount < productNames.size()) {
+                        return false;
+                    }
+
+                    for (String productName : productNames) {
+                        String id = productName.toLowerCase().replace(" ", "-");
+                        List<WebElement> removeButtons = driver.findElements(By.cssSelector("button[data-test='remove-" + id + "']"));
+                        if (removeButtons.isEmpty()) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                } catch (org.openqa.selenium.StaleElementReferenceException e) {
+                    // DOM re-rendered mid-read; treat as not-ready-yet and let the wait poll again.
+                    return false;
+                }
+            });
+        } catch (TimeoutException e) {
             return false;
         }
-
-        // Verify that each product has a corresponding "Remove" button present in the DOM
-        for (String productName : productNames) {
-            String id = productName.toLowerCase().replace(" ", "-");
-            List<WebElement> removeButtons = driver.findElements(By.cssSelector("button[data-test='remove-" + id + "']"));
-            if (removeButtons.isEmpty()) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     // Method to verify that a specific product is not in the cart by its name
     public boolean areProductsNotInCart(List<String> productNames) {
-        for (String productName : productNames) {
-            String buttonSelector = "//div[@class='inventory_item_name' and text()='" + productName + "']/following-sibling::div[@class='pricebar']//button[contains(text(), 'Remove')]";
-            List<WebElement> removeButtons = driver.findElements(By.xpath(buttonSelector));
-    
-            if (!removeButtons.isEmpty()) {
-                return false;
-            }
+        try {
+            return wait.until(driver -> {
+                try {
+                    for (String productName : productNames) {
+                        String id = productName.toLowerCase().replace(" ", "-");
+                        List<WebElement> removeButtons = driver.findElements(By.cssSelector("button[data-test='remove-" + id + "']"));
+                        if (!removeButtons.isEmpty()) {
+                            return false;
+                        }
+                    }
+                    return true;
+                } catch (org.openqa.selenium.StaleElementReferenceException e) {
+                    return false;
+                }
+            });
+        } catch (TimeoutException e) {
+            return false;
         }
-        return true;
     }
 }

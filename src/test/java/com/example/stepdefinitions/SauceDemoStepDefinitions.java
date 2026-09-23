@@ -7,7 +7,10 @@ import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.github.bonigarcia.wdm.WebDriverManager;
+// Replaced by Selenium Manager (built into selenium-java since 4.6) - see setUp() below
+// import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -35,15 +38,36 @@ public class SauceDemoStepDefinitions {
     @Before
     public void setUp() {
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
+        // options.addArguments("--headless"); // old headless mode renders unreliably on newer Chrome builds
+//        options.addArguments("--headless=new");
+        // Fixed viewport instead of maximize() - maximize() is unreliable in headless mode
+        // across different CI runner screen geometries, which was a source of flaky layouts.
+        options.addArguments("--window-size=1920,1080");
         options.addArguments("--disable-gpu");
+        options.addArguments("--disable-notifications");
+        // options.addArguments("--disable-infobars");
+        // options.addArguments("--disable-features=Translate,TranslateUI");
+        // options.addArguments("--disable-component-update");
+        // options.addArguments("--password-store=basic");
+        // options.addArguments("--no-default-browser-check");
+        options.addArguments("--no-first-run");
 
-        WebDriverManager.chromedriver().setup();
+        // WebDriverManager.chromedriver().setup(); // replaced by Selenium Manager (built into selenium-java since 4.6)
         driver = new ChromeDriver(options);
-        driver.manage().window().maximize();
         selectedItems = new ArrayList<>();
     }
-
+    
+    private void handlePossibleAlert() {
+        try {
+            Alert alert = driver.switchTo().alert();
+            if (alert != null) {
+                alert.accept();
+            }
+        } catch (NoAlertPresentException ignored) {
+            // No alert present
+        }
+    }
+    
     @Given("I am on the Sauce Demo login page")
     public void i_am_on_the_sauce_demo_login_page() {
         driver.get("https://www.saucedemo.com/");
@@ -54,6 +78,7 @@ public class SauceDemoStepDefinitions {
     @When("I log in with standard_user credentials")
     public void i_log_in_with_standard_user_credentials() {
         loginPage.login("standard_user", "secret_sauce");
+        handlePossibleAlert();
         productsPage = new ProductsPage(driver);
     }
 
@@ -84,16 +109,11 @@ public class SauceDemoStepDefinitions {
     @Then("the products should be successfully added to the cart without going to the cart")
     public void the_products_should_be_successfully_added_to_the_cart_without_going_to_the_cart() {
         List<String> selectedItemsNames = Arrays.asList("Sauce Labs Backpack", "Sauce Labs Bike Light");
-    
-        // Add a small delay to ensure the page has updated
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        wait.until(d -> productsPage.areProductsInCart(selectedItemsNames));
+
         boolean areInCart = productsPage.areProductsInCart(selectedItemsNames);
-    
         assertTrue(areInCart, "One or more products are not displayed in the cart.");
     }
 
@@ -146,6 +166,7 @@ public class SauceDemoStepDefinitions {
         PageFactory.initElements(driver, cartPage);
 
         commonElements.goToCart();
+        handlePossibleAlert();
     }
 
     @Then("I should see the selected products displayed correctly in the cart")
@@ -182,6 +203,9 @@ public class SauceDemoStepDefinitions {
     public void i_fill_in_the_checkout_form_with_valid_information() {
         checkoutPage = new CheckoutPage(driver);
         checkoutPage.submitForm("Nikolay", "Kashev", "4004");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("checkout-step-two"));
     }
 
     @Then("the information on the last preview screen is shown properly")
@@ -214,6 +238,7 @@ public class SauceDemoStepDefinitions {
     @When("I complete the purchase")
     public void i_complete_the_purchase() {
         checkoutPage.clickFinish();
+        handlePossibleAlert();
     }
 
     @Then("I should see a purchase success message")

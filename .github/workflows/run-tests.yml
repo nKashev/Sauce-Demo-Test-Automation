@@ -2,14 +2,14 @@ name: Run Tests on Multiple OS
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '59 21 * * 0' # weekly, Sunday 21:59 UTC
   # push:
   #   branches:
   #     - main
   # pull_request:
   #   branches:
   #     - main
-  # schedule:
-  #   - cron: '59 21 * * 0'
 
 jobs:
   test:
@@ -45,9 +45,9 @@ jobs:
           name: cucumber-reports-${{ matrix.os }}
           path: target/cucumber-reports/
 
-      # - name: Archive test reports (Surefire)
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: surefire-reports-${{ matrix.os }}
-      #     path: target/surefire-reports/
+      - name: Archive test reports (Surefire)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-${{ matrix.os }}
+          path: target/surefire-reports/

@@ -42,18 +42,22 @@ public class CheckoutPage extends BasePage {
 
     // Step One Methods
     public void fillFirstName(String firstName) {
+        waitForVisibility(firstNameField);
         driver.findElement(firstNameField).sendKeys(firstName);
     }
 
     public void fillLastName(String lastName) {
+        waitForVisibility(lastNameField);
         driver.findElement(lastNameField).sendKeys(lastName);
     }
 
     public void fillPostalCode(String postalCode) {
+        waitForVisibility(postalCodeField);
         driver.findElement(postalCodeField).sendKeys(postalCode);
     }
 
     public void clickContinue() {
+        waitForVisibility(continueButton);
         WebElement continueBtn = driver.findElement(continueButton);
         scrollToElement(continueBtn);
         continueBtn.click();
@@ -75,6 +79,7 @@ public class CheckoutPage extends BasePage {
 
     // Method to check if error message is displayed
     public boolean hasErrorMessage() {
+        waitForVisibility(errorMessage);
         return driver.findElements(errorMessage).size() > 0;
     }
 
@@ -171,6 +176,7 @@ public class CheckoutPage extends BasePage {
     // Method to check if success message is displayed
     public boolean hasSuccessMessage(String expectedHeader, String expectedText) {
         try {
+            waitForVisibility(successHeader);
             String actualHeader = getSuccessHeader();
             String actualText = getSuccessText();
     

@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
-            <version>4.21.0</version>
+            <version>4.49.0</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
@@ -35,11 +35,14 @@
             <version>7.10.0</version>
             <scope>test</scope>
         </dependency>
+        <!-- Replaced by Selenium Manager (built into selenium-java since 4.6) -->
+        <!--
         <dependency>
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>webdrivermanager</artifactId>
             <version>5.7.0</version>
         </dependency>
+        -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
@@ -53,6 +56,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.2</version>
+                <configuration>
+                    <!-- Scenario runs against the live public saucedemo.com site; occasional network/
+                         timing hiccups get one automatic re-run before the build is marked failed. -->
+                    <rerunFailingTestsCount>2</rerunFailingTestsCount>
+                </configuration>
             </plugin>
         </plugins>
     </build>

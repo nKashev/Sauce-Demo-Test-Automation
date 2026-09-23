@@ -1,3 +1,5 @@
 .idea/
 .vscode/
 target/
+.git_commands.txt
+.useful_commands.txt

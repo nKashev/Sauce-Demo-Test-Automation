@@ -1,9 +1,13 @@
 package com.example.pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.List;
 
 public class CartPage extends BasePage {
@@ -15,6 +19,7 @@ public class CartPage extends BasePage {
     private By removeButton = By.cssSelector("[class='btn btn_secondary btn_small cart_button']");
     private By continueShoppingButton = By.cssSelector("[data-test='continue-shopping']");
     private By checkoutButton = By.cssSelector("[data-test='checkout']");
+    private By checkoutButtonFallback = By.cssSelector("button.checkout_button");
 
     public CartPage(WebDriver driver) {
         super(driver);
@@ -56,24 +61,71 @@ public class CartPage extends BasePage {
 
     // Click 'Checkout'
     public void clickCheckout() {
-        WebElement checkoutBtn = driver.findElement(checkoutButton);
-        scrollToElement(checkoutBtn);
-        checkoutBtn.click();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        WebElement checkoutBtn = null;
+
+        try {
+            checkoutBtn = wait.until(driver -> {
+                List<WebElement> buttons = driver.findElements(checkoutButton);
+                if (!buttons.isEmpty()) {
+                    WebElement button = buttons.get(0);
+                    return button.isDisplayed() && button.isEnabled() ? button : null;
+                }
+
+                buttons = driver.findElements(checkoutButtonFallback);
+                if (!buttons.isEmpty()) {
+                    WebElement button = buttons.get(0);
+                    return button.isDisplayed() && button.isEnabled() ? button : null;
+                }
+
+                return null;
+            });
+        } catch (org.openqa.selenium.TimeoutException e) {
+            List<WebElement> fallbackButtons = driver.findElements(checkoutButtonFallback);
+            if (!fallbackButtons.isEmpty()) {
+                checkoutBtn = fallbackButtons.get(0);
+            } else {
+                throw e;
+            }
+        }
+
+        if (checkoutBtn != null) {
+            scrollToElement(checkoutBtn);
+            checkoutBtn.click();
+            try {
+                wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("checkout-step-one"));
+            } catch (org.openqa.selenium.TimeoutException e) {
+                // Click occasionally doesn't register (observed against the live site under headless Chrome).
+                // Re-locate and retry once before giving up.
+                checkoutBtn.click();
+                wait.until(org.openqa.selenium.support.ui.ExpectedConditions.urlContains("checkout-step-one"));
+            }
+        }
     }
 
     // Verify if the item is in the cart
     public boolean isItemInCart(String expectedItemName) {
-        // System.out.println("Checking for item: " + expectedItemName);
-        List<WebElement> itemsInCart = getCartItems();
-        // System.out.println("Number of items in cart: " + itemsInCart.size());
-        for (WebElement item : itemsInCart) {
-            String actualItemName = getItemName(item);
-            // System.out.println("Found item in cart: " + actualItemName);
-            if (actualItemName.equalsIgnoreCase(expectedItemName)) {
-                return true;
-            }
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+
+        try {
+            return wait.until(driver -> {
+                try {
+                    List<WebElement> itemsInCart = getCartItems();
+                    for (WebElement item : itemsInCart) {
+                        String actualItemName = getItemName(item);
+                        if (actualItemName.equalsIgnoreCase(expectedItemName)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                } catch (org.openqa.selenium.StaleElementReferenceException e) {
+                    // DOM re-rendered mid-read; treat as not-ready-yet and let the wait poll again.
+                    return false;
+                }
+            });
+        } catch (TimeoutException e) {
+            return false;
         }
-        return false;
     }
 
     // Verify the total number of items in the cart
