@@ -272,7 +272,7 @@ public class SauceDemoStepDefinitions {
     public void i_should_be_back_on_the_login_page() {
         // System.out.println(driver.getCurrentUrl());
         assertEquals(driver.getCurrentUrl(), TestConfig.baseUrl(), "The URL does not match the expected login page URL.");
-        assertTrue(commonElements.isLoginButtonDisplayed());
+        assertTrue(commonElements.isLoginButtonDisplayed(), "Login button is not displayed.");
     }
 
     @After
